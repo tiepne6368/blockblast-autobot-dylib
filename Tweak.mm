@@ -1,7 +1,7 @@
 // ============================================================================
 // BlockBlastAutoBot.dylib — Tweak Tự Động Chơi Cho Game Block Blast Thật (iOS)
-// Chuẩn Pure Objective-C (Tương thích 100% cả clang và clang++ trên Xcode SDK)
-// Dùng cho: ESign / Feather / Sideloadly / TrollStore (Non-Jailbreak)
+// Bản Vá V3: Đã sửa triệt để lỗi hằng số chấm động kCellSizePt = 47.00
+// Tương thích: ESign / Feather / Sideloadly / TrollStore (Non-Jailbreak)
 // Cấu hình màn hình: iPhone 14 / 15 / 16 Pro Max & Plus (430 × 932 pt)
 // ============================================================================
 
@@ -12,17 +12,17 @@
 #include <string.h>
 #include <stdlib.h>
 
-static const CGFloat kGridOriginX        = 27.0f;
-static const CGFloat kGridOriginY        = 214.0f;
-static const CGFloat kGridSizePt         = 376.0f;
-static const CGFloat kCellSizePt         = 47f;
-static const CGFloat kSlotX[3]           = { 88.0f, 215.0f, 342.0f };
-static const CGFloat kSlotY              = 736.0f;
-static const CGFloat kFingerLiftOffsetY  = 78.0f;
+static const CGFloat kGridOriginX        = 27.00;
+static const CGFloat kGridOriginY        = 214.00;
+static const CGFloat kGridSizePt         = 376.00;
+static const CGFloat kCellSizePt         = 47.00;
+static const CGFloat kSlotX[3]           = { 88.00, 215.00, 342.00 };
+static const CGFloat kSlotY              = 736.00;
+static const CGFloat kFingerLiftOffsetY  = 78.00;
 
 static BOOL gAutoPlayEnabled             = NO;
-static CGFloat gDragDurationSec          = 0.26f;
-static CGFloat gStepIntervalSec          = 0.34f;
+static CGFloat gDragDurationSec          = 0.26;
+static CGFloat gStepIntervalSec          = 0.34;
 static BOOL gDrawLaserGuide              = YES;
 
 typedef struct {
@@ -120,7 +120,7 @@ static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
     CGSize winSize = win.bounds.size;
     if (winSize.width <= 0 || winSize.height <= 0) return;
 
-    UIGraphicsBeginImageContextWithOptions(winSize, NO, 1.0f);
+    UIGraphicsBeginImageContextWithOptions(winSize, NO, 1.0);
     [win drawViewHierarchyInRect:win.bounds afterScreenUpdates:NO];
     UIImage *snap = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
@@ -139,8 +139,8 @@ static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
     int r, c;
     for (r = 0; r < 8; r++) {
         for (c = 0; c < 8; c++) {
-            int rawX = (int)(kGridOriginX + ((CGFloat)c + 0.5f) * kCellSizePt);
-            int rawY = (int)(kGridOriginY + ((CGFloat)r + 0.5f) * kCellSizePt);
+            int rawX = (int)(kGridOriginX + ((CGFloat)c + 0.5) * kCellSizePt);
+            int rawY = (int)(kGridOriginY + ((CGFloat)r + 0.5) * kCellSizePt);
             int px = BBMinInt((int)width - 1, BBMaxInt(0, rawX));
             int py = BBMinInt((int)height - 1, BBMaxInt(0, rawY));
             size_t offset = (size_t)py * bytesPerRow + (size_t)px * 4;
@@ -172,32 +172,32 @@ static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor colorWithRed:0.06f green:0.09f blue:0.16f alpha:0.93f];
-        self.layer.cornerRadius = 16.0f;
-        self.layer.borderWidth = 1.5f;
-        self.layer.borderColor = [UIColor colorWithRed:0.96f green:0.62f blue:0.04f alpha:0.85f].CGColor;
+        self.backgroundColor = [UIColor colorWithRed:0.06 green:0.09 blue:0.16 alpha:0.93];
+        self.layer.cornerRadius = 16.0;
+        self.layer.borderWidth = 1.5;
+        self.layer.borderColor = [UIColor colorWithRed:0.96 green:0.62 blue:0.04 alpha:0.85].CGColor;
         self.clipsToBounds = YES;
 
         _toggleButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _toggleButton.frame = CGRectMake(10.0f, 10.0f, 175.0f, 36.0f);
-        _toggleButton.layer.cornerRadius = 10.0f;
+        _toggleButton.frame = CGRectMake(10.0, 10.0, 175.0, 36.0);
+        _toggleButton.layer.cornerRadius = 10.0;
         [_toggleButton setTitle:@"BẬT AUTO-PLAY: OFF" forState:UIControlStateNormal];
-        _toggleButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0f];
-        _toggleButton.backgroundColor = [UIColor colorWithRed:0.96f green:0.62f blue:0.04f alpha:1.0f];
+        _toggleButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+        _toggleButton.backgroundColor = [UIColor colorWithRed:0.96 green:0.62 blue:0.04 alpha:1.0];
         [_toggleButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [_toggleButton addTarget:self action:@selector(onToggleTap) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:_toggleButton];
 
-        _statusLabel = [[UILabel alloc] initWithFrame:CGRectMake(10.0f, 50.0f, 175.0f, 16.0f)];
-        _statusLabel.text = [NSString stringWithFormat:@"Tốc độ: %.0f ms | Kéo menu", gDragDurationSec * 1000.0f];
+        _statusLabel = [[UILabel alloc] initWithFrame:CGRectMake(10.0, 50.0, 175.0, 16.0)];
+        _statusLabel.text = [NSString stringWithFormat:@"Tốc độ: %.0f ms | Kéo menu", gDragDurationSec * 1000.0];
         _statusLabel.textColor = [UIColor lightGrayColor];
-        _statusLabel.font = [UIFont systemFontOfSize:10.0f weight:UIFontWeightMedium];
+        _statusLabel.font = [UIFont systemFontOfSize:10.0 weight:UIFontWeightMedium];
         [self addSubview:_statusLabel];
 
-        _speedSlider = [[UISlider alloc] initWithFrame:CGRectMake(10.0f, 68.0f, 175.0f, 24.0f)];
+        _speedSlider = [[UISlider alloc] initWithFrame:CGRectMake(10.0, 68.0, 175.0, 24.0)];
         _speedSlider.minimumValue = 0.12f;
         _speedSlider.maximumValue = 0.85f;
-        _speedSlider.value = gDragDurationSec;
+        _speedSlider.value = (float)gDragDurationSec;
         [_speedSlider addTarget:self action:@selector(onSpeedChange:) forControlEvents:UIControlEventValueChanged];
         [self addSubview:_speedSlider];
 
@@ -211,7 +211,7 @@ static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
     gAutoPlayEnabled = !gAutoPlayEnabled;
     if (gAutoPlayEnabled) {
         [_toggleButton setTitle:@"AUTO-PLAY: ĐANG CHẠY" forState:UIControlStateNormal];
-        _toggleButton.backgroundColor = [UIColor colorWithRed:0.06f green:0.73f blue:0.51f alpha:1.0f];
+        _toggleButton.backgroundColor = [UIColor colorWithRed:0.06 green:0.73 blue:0.51 alpha:1.0];
         _botTimer = [NSTimer scheduledTimerWithTimeInterval:(gDragDurationSec + gStepIntervalSec)
                                                      target:self
                                                    selector:@selector(performNextBotTurn)
@@ -220,7 +220,7 @@ static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
         [self performNextBotTurn];
     } else {
         [_toggleButton setTitle:@"BẬT AUTO-PLAY: OFF" forState:UIControlStateNormal];
-        _toggleButton.backgroundColor = [UIColor colorWithRed:0.96f green:0.62f blue:0.04f alpha:1.0f];
+        _toggleButton.backgroundColor = [UIColor colorWithRed:0.96 green:0.62 blue:0.04 alpha:1.0];
         [_botTimer invalidate];
         _botTimer = nil;
         if (_laserLayer) _laserLayer.path = nil;
@@ -229,8 +229,8 @@ static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
 }
 
 - (void)onSpeedChange:(UISlider *)slider {
-    gDragDurationSec = slider.value;
-    _statusLabel.text = [NSString stringWithFormat:@"Tốc độ: %.0f ms | Kéo menu", gDragDurationSec * 1000.0f];
+    gDragDurationSec = (CGFloat)slider.value;
+    _statusLabel.text = [NSString stringWithFormat:@"Tốc độ: %.0f ms | Kéo menu", gDragDurationSec * 1000.0];
 }
 
 - (void)onDragHUD:(UIPanGestureRecognizer *)pan {
@@ -281,24 +281,24 @@ static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
     CGFloat targetX = kGridOriginX + (CGFloat)bestC * kCellSizePt;
     CGFloat targetY = kGridOriginY + (CGFloat)bestR * kCellSizePt;
     CGPoint endPt = CGPointMake(
-        targetX + ((CGFloat)sampleShape.cols * 0.5f) * kCellSizePt,
-        targetY + ((CGFloat)sampleShape.rows * 0.5f) * kCellSizePt
+        targetX + ((CGFloat)sampleShape.cols * 0.5) * kCellSizePt,
+        targetY + ((CGFloat)sampleShape.rows * 0.5) * kCellSizePt
     );
 
     if (gDrawLaserGuide) {
         if (!_laserLayer) {
             _laserLayer = [CAShapeLayer layer];
-            _laserLayer.strokeColor = [UIColor colorWithRed:0.96f green:0.62f blue:0.04f alpha:0.95f].CGColor;
-            _laserLayer.lineWidth = 3.5f;
+            _laserLayer.strokeColor = [UIColor colorWithRed:0.96 green:0.62 blue:0.04 alpha:0.95].CGColor;
+            _laserLayer.lineWidth = 3.5;
             _laserLayer.lineDashPattern = @[@6, @4];
             _laserLayer.fillColor = [UIColor clearColor].CGColor;
             [self.window.layer addSublayer:_laserLayer];
         }
         if (!_targetBoxLayer) {
             _targetBoxLayer = [CAShapeLayer layer];
-            _targetBoxLayer.strokeColor = [UIColor colorWithRed:0.06f green:0.73f blue:0.51f alpha:0.95f].CGColor;
-            _targetBoxLayer.fillColor = [UIColor colorWithRed:0.06f green:0.73f blue:0.51f alpha:0.25f].CGColor;
-            _targetBoxLayer.lineWidth = 2.5f;
+            _targetBoxLayer.strokeColor = [UIColor colorWithRed:0.06 green:0.73 blue:0.51 alpha:0.95].CGColor;
+            _targetBoxLayer.fillColor = [UIColor colorWithRed:0.06 green:0.73 blue:0.51 alpha:0.25].CGColor;
+            _targetBoxLayer.lineWidth = 2.5;
             [self.window.layer addSublayer:_targetBoxLayer];
         }
         UIBezierPath *path = [UIBezierPath bezierPath];
@@ -307,7 +307,7 @@ static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
         _laserLayer.path = path.CGPath;
 
         CGRect boxRect = CGRectMake(targetX, targetY, (CGFloat)sampleShape.cols * kCellSizePt, (CGFloat)sampleShape.rows * kCellSizePt);
-        _targetBoxLayer.path = [UIBezierPath bezierPathWithRoundedRect:boxRect cornerRadius:8.0f].CGPath;
+        _targetBoxLayer.path = [UIBezierPath bezierPathWithRoundedRect:boxRect cornerRadius:8.0].CGPath;
     }
 }
 @end
@@ -328,7 +328,7 @@ static void InitBlockBlastAutoBot(void) {
             targetWin = [UIApplication sharedApplication].windows.firstObject;
         }
         if (targetWin) {
-            BBAutoBotOverlay *hud = [[BBAutoBotOverlay alloc] initWithFrame:CGRectMake(16.0f, 62.0f, 195.0f, 98.0f)];
+            BBAutoBotOverlay *hud = [[BBAutoBotOverlay alloc] initWithFrame:CGRectMake(16.0, 62.0, 195.0, 98.0)];
             [targetWin addSubview:hud];
         }
     });
