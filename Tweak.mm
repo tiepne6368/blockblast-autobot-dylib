@@ -112,7 +112,7 @@ static int BBSimulateAndScore(int board[8][8], BBShapeMatrix s, int r0, int c0) 
         }
     }
 
-    return lines * 180 + emptyCount * 14 - holes * 70 + (has3x3 > 0 ? 260 : -260);
+    return lines * 260 + emptyCount * 14 - holes * 70 + (has3x3 > 0 ? 260 : -260);
 }
 
 static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
