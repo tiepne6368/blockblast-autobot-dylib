@@ -22,10 +22,6 @@ jobs:
           mkdir -p build dist
           SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
           echo "Using Xcode iOS SDK at: $SDK_PATH"
-          SRC_FILE="Tweak.m"
-          if [ ! -f "$SRC_FILE" ]; then
-            SRC_FILE="Tweak.mm"
-          fi
           xcrun --sdk iphoneos clang -isysroot "$SDK_PATH" \
             -arch arm64 \
             -dynamiclib \
@@ -37,7 +33,7 @@ jobs:
             -framework Foundation \
             -framework QuartzCore \
             -framework CoreGraphics \
-            "$SRC_FILE" -o build/BlockBlastAutoBot.dylib
+            Tweak.m -o build/BlockBlastAutoBot.dylib
           codesign -f -s - build/BlockBlastAutoBot.dylib
           cp build/BlockBlastAutoBot.dylib dist/BlockBlastAutoBot.dylib
           ls -lh build/BlockBlastAutoBot.dylib
