@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [ main, master ]
+    paths-ignore:
+      - 'dist/**'
 
 permissions:
   contents: write
@@ -15,16 +17,25 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Biên dịch BlockBlastAutoBot.dylib bằng Xcode iOS SDK
+      - name: Biên dịch BlockBlastAutoBot.dylib (Xcode iOS SDK + isysroot)
         run: |
-          mkdir -p build
-          xcrun -sdk iphoneos clang++ -arch arm64 -dynamiclib -std=c++17 -fobjc-arc \
+          set -e
+          mkdir -p build dist
+          SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
+          echo "Using Xcode iOS SDK at: $SDK_PATH"
+          SRC_FILE="Tweak.m"
+          if [ ! -f "$SRC_FILE" ] && [ -f "Tweak.mm" ]; then
+            cp Tweak.mm Tweak.m
+          fi
+          xcrun --sdk iphoneos clang -isysroot "$SDK_PATH" \
+            -arch arm64 -dynamiclib -fobjc-arc -std=gnu99 \
             -mios-version-min=14.0 \
-            -install_name @executable_path/Frameworks/BlockBlastAutoBot.dylib \
+            -Wno-deprecated-declarations \
+            -install_name @rpath/BlockBlastAutoBot.dylib \
             -framework UIKit -framework Foundation -framework QuartzCore -framework CoreGraphics \
-            Tweak.mm -o build/BlockBlastAutoBot.dylib
-          brew install ldid
-          ldid -S build/BlockBlastAutoBot.dylib
+            Tweak.m -o build/BlockBlastAutoBot.dylib
+          codesign -f -s - build/BlockBlastAutoBot.dylib
+          cp build/BlockBlastAutoBot.dylib dist/BlockBlastAutoBot.dylib
           ls -lh build/BlockBlastAutoBot.dylib
 
       - name: Lưu Artifact BlockBlastAutoBot.dylib
@@ -33,10 +44,14 @@ jobs:
           name: BlockBlastAutoBot-Dylib
           path: build/BlockBlastAutoBot.dylib
 
-      - name: Tạo bản phát hành (Release) tải trực tiếp trên iPhone
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: "BlockBlastAutoBot.dylib (Bản build #${{ github.run_number }})"
-          body: "Tải trực tiếp file **BlockBlastAutoBot.dylib** bên dưới về iPhone và chèn vào IPA Block Blast qua mục **Inject Dylib (Thêm thư viện)** trong **ESign** hoặc **Feather**."
-          files: build/BlockBlastAutoBot.dylib
+      - name: Xuất bản trực tiếp vào nhánh chính & tạo Release cho iPhone
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f dist/BlockBlastAutoBot.dylib
+          git diff --staged --quiet || (git commit -m "chore: build BlockBlastAutoBot.dylib [skip ci]" && git push)
+          gh release create "v1.0.${{ github.run_number }}" build/BlockBlastAutoBot.dylib \
+            --title "BlockBlastAutoBot.dylib (Bản build #${{ github.run_number }})" \
+            --notes "Nhấn vào file BlockBlastAutoBot.dylib bên dưới để tải trực tiếp về iPhone và chèn vào IPA qua mục Thêm thư viện (Inject Dylib) trong ESign hoặc Feather." || true
