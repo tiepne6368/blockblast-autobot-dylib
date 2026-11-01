@@ -1,0 +1,42 @@
+name: Build BlockBlastAutoBot.dylib (iOS arm64)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+permissions:
+  contents: write
+
+jobs:
+  build-ios-dylib:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Biên dịch BlockBlastAutoBot.dylib bằng Xcode iOS SDK
+        run: |
+          mkdir -p build
+          xcrun -sdk iphoneos clang++ -arch arm64 -dynamiclib -std=c++17 -fobjc-arc \
+            -mios-version-min=14.0 \
+            -install_name @executable_path/Frameworks/BlockBlastAutoBot.dylib \
+            -framework UIKit -framework Foundation -framework QuartzCore -framework CoreGraphics \
+            Tweak.mm -o build/BlockBlastAutoBot.dylib
+          brew install ldid
+          ldid -S build/BlockBlastAutoBot.dylib
+          ls -lh build/BlockBlastAutoBot.dylib
+
+      - name: Lưu Artifact BlockBlastAutoBot.dylib
+        uses: actions/upload-artifact@v4
+        with:
+          name: BlockBlastAutoBot-Dylib
+          path: build/BlockBlastAutoBot.dylib
+
+      - name: Tạo bản phát hành (Release) tải trực tiếp trên iPhone
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: "BlockBlastAutoBot.dylib (Bản build #${{ github.run_number }})"
+          body: "Tải trực tiếp file **BlockBlastAutoBot.dylib** bên dưới về iPhone và chèn vào IPA Block Blast qua mục **Inject Dylib (Thêm thư viện)** trong **ESign** hoặc **Feather**."
+          files: build/BlockBlastAutoBot.dylib
