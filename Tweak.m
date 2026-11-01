@@ -1,7 +1,7 @@
 // ============================================================================
-// File: Tweak.m (Pure Objective-C & C99 - Chuẩn Xcode iOS SDK arm64)
 // BlockBlastAutoBot.dylib — Tweak Tự Động Chơi Cho Game Block Blast Thật (iOS)
-// Tương thích: ESign / Feather / Sideloadly / TrollStore (Non-Jailbreak)
+// Chuẩn Pure Objective-C (Tương thích 100% cả clang và clang++ trên Xcode SDK)
+// Dùng cho: ESign / Feather / Sideloadly / TrollStore (Non-Jailbreak)
 // Cấu hình màn hình: iPhone 14 / 15 / 16 Pro Max & Plus (430 × 932 pt)
 // ============================================================================
 
@@ -11,7 +11,6 @@
 #import <Foundation/Foundation.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 static const CGFloat kGridOriginX        = 27.0f;
 static const CGFloat kGridOriginY        = 214.0f;
@@ -35,49 +34,51 @@ typedef struct {
 static int BBMaxInt(int a, int b) { return a > b ? a : b; }
 static int BBMinInt(int a, int b) { return a < b ? a : b; }
 
-static bool BBCanPlace(const int board[8][8], BBShapeMatrix s, int r0, int c0) {
-    if (r0 < 0 || c0 < 0 || r0 + s.rows > 8 || c0 + s.cols > 8) return false;
-    for (int r = 0; r < s.rows; r++) {
-        for (int c = 0; c < s.cols; c++) {
-            if (s.cells[r][c] == 1 && board[r0 + r][c0 + c] != 0) return false;
+static BOOL BBCanPlace(const int board[8][8], BBShapeMatrix s, int r0, int c0) {
+    if (r0 < 0 || c0 < 0 || r0 + s.rows > 8 || c0 + s.cols > 8) return NO;
+    int r, c;
+    for (r = 0; r < s.rows; r++) {
+        for (c = 0; c < s.cols; c++) {
+            if (s.cells[r][c] == 1 && board[r0 + r][c0 + c] != 0) return NO;
         }
     }
-    return true;
+    return YES;
 }
 
 static int BBSimulateAndScore(int board[8][8], BBShapeMatrix s, int r0, int c0) {
-    for (int r = 0; r < s.rows; r++) {
-        for (int c = 0; c < s.cols; c++) {
+    int r, c, dr, dc;
+    for (r = 0; r < s.rows; r++) {
+        for (c = 0; c < s.cols; c++) {
             if (s.cells[r][c] == 1) board[r0 + r][c0 + c] = 1;
         }
     }
 
-    int clearedRows[8] = {0};
-    int clearedCols[8] = {0};
+    int clearedRows[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    int clearedCols[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     int lines = 0;
 
-    for (int r = 0; r < 8; r++) {
-        bool full = true;
-        for (int c = 0; c < 8; c++) {
-            if (board[r][c] == 0) { full = false; break; }
+    for (r = 0; r < 8; r++) {
+        BOOL full = YES;
+        for (c = 0; c < 8; c++) {
+            if (board[r][c] == 0) { full = NO; break; }
         }
         if (full) { clearedRows[r] = 1; lines++; }
     }
-    for (int c = 0; c < 8; c++) {
-        bool full = true;
-        for (int r = 0; r < 8; r++) {
-            if (board[r][c] == 0) { full = false; break; }
+    for (c = 0; c < 8; c++) {
+        BOOL full = YES;
+        for (r = 0; r < 8; r++) {
+            if (board[r][c] == 0) { full = NO; break; }
         }
         if (full) { clearedCols[c] = 1; lines++; }
     }
-    for (int r = 0; r < 8; r++) {
+    for (r = 0; r < 8; r++) {
         if (clearedRows[r]) {
-            for (int c = 0; c < 8; c++) board[r][c] = 0;
+            for (c = 0; c < 8; c++) board[r][c] = 0;
         }
     }
-    for (int c = 0; c < 8; c++) {
+    for (c = 0; c < 8; c++) {
         if (clearedCols[c]) {
-            for (int r = 0; r < 8; r++) board[r][c] = 0;
+            for (r = 0; r < 8; r++) board[r][c] = 0;
         }
     }
 
@@ -85,8 +86,8 @@ static int BBSimulateAndScore(int board[8][8], BBShapeMatrix s, int r0, int c0) 
     int holes = 0;
     int has3x3 = 0;
 
-    for (int r = 0; r < 8; r++) {
-        for (int c = 0; c < 8; c++) {
+    for (r = 0; r < 8; r++) {
+        for (c = 0; c < 8; c++) {
             if (board[r][c] == 0) {
                 emptyCount++;
                 int blocked = 0;
@@ -99,12 +100,12 @@ static int BBSimulateAndScore(int board[8][8], BBShapeMatrix s, int r0, int c0) 
         }
     }
 
-    for (int r = 0; r <= 5; r++) {
-        for (int c = 0; c <= 5; c++) {
-            bool ok = true;
-            for (int dr = 0; dr < 3 && ok; dr++) {
-                for (int dc = 0; dc < 3; dc++) {
-                    if (board[r + dr][c + dc] != 0) { ok = false; break; }
+    for (r = 0; r <= 5; r++) {
+        for (c = 0; c <= 5; c++) {
+            BOOL ok = YES;
+            for (dr = 0; dr < 3 && ok; dr++) {
+                for (dc = 0; dc < 3; dc++) {
+                    if (board[r + dr][c + dc] != 0) { ok = NO; break; }
                 }
             }
             if (ok) has3x3++;
@@ -119,7 +120,7 @@ static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
     CGSize winSize = win.bounds.size;
     if (winSize.width <= 0 || winSize.height <= 0) return;
 
-    UIGraphicsBeginImageContextWithOptions(winSize, NO, 1.0);
+    UIGraphicsBeginImageContextWithOptions(winSize, NO, 1.0f);
     [win drawViewHierarchyInRect:win.bounds afterScreenUpdates:NO];
     UIImage *snap = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
@@ -135,8 +136,9 @@ static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
     size_t width = CGImageGetWidth(cgImg);
     size_t height = CGImageGetHeight(cgImg);
 
-    for (int r = 0; r < 8; r++) {
-        for (int c = 0; c < 8; c++) {
+    int r, c;
+    for (r = 0; r < 8; r++) {
+        for (c = 0; c < 8; c++) {
             int rawX = (int)(kGridOriginX + ((CGFloat)c + 0.5f) * kCellSizePt);
             int rawY = (int)(kGridOriginY + ((CGFloat)r + 0.5f) * kCellSizePt);
             int px = BBMinInt((int)width - 1, BBMaxInt(0, rawX));
@@ -148,7 +150,7 @@ static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
             int blue = (int)data[offset + 2];
             int maxC = BBMaxInt(red, BBMaxInt(green, blue));
             int minC = BBMinInt(red, BBMinInt(green, blue));
-            bool isFilled = (maxC > 88 && (maxC - minC) > 38);
+            BOOL isFilled = (maxC > 88 && (maxC - minC) > 38) ? YES : NO;
             outBoard[r][c] = isFilled ? 1 : 0;
         }
     }
@@ -255,9 +257,10 @@ static void BBScanBoardFromWindow(UIWindow *win, int outBoard[8][8]) {
     int bestScore = -999999;
     int bestR = 0;
     int bestC = 0;
+    int r, c;
 
-    for (int r = 0; r <= 8 - sampleShape.rows; r++) {
-        for (int c = 0; c <= 8 - sampleShape.cols; c++) {
+    for (r = 0; r <= 8 - sampleShape.rows; r++) {
+        for (c = 0; c <= 8 - sampleShape.cols; c++) {
             if (BBCanPlace(board, sampleShape, r, c)) {
                 int temp[8][8];
                 memcpy(temp, board, sizeof(board));
