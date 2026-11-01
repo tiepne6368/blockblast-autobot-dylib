@@ -1,8 +1,12 @@
-# Makefile biên dịch nhanh bằng Xcode iOS SDK
+# Makefile biên dịch chuẩn với cờ -isysroot của Xcode iOS SDK
+SDK_PATH := $(shell xcrun --sdk iphoneos --show-sdk-path)
+
 all:
-	xcrun -sdk iphoneos clang++ -arch arm64 -dynamiclib -std=c++17 -fobjc-arc \
+	xcrun --sdk iphoneos clang -isysroot "$(SDK_PATH)" \
+		-arch arm64 -dynamiclib -fobjc-arc -std=gnu99 \
 		-mios-version-min=14.0 \
-		-install_name @executable_path/Frameworks/BlockBlastAutoBot.dylib \
+		-Wno-deprecated-declarations \
+		-install_name @rpath/BlockBlastAutoBot.dylib \
 		-framework UIKit -framework Foundation -framework QuartzCore -framework CoreGraphics \
-		Tweak.mm -o BlockBlastAutoBot.dylib
-	ldid -S BlockBlastAutoBot.dylib
+		Tweak.m -o BlockBlastAutoBot.dylib
+	codesign -f -s - BlockBlastAutoBot.dylib
